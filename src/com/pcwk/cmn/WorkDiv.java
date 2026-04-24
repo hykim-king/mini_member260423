@@ -11,23 +11,23 @@ import java.util.List;
 /**
  * DAO CRUD메서드 정의
  */
-public interface WorkDiv {
+public interface WorkDiv<T> {
 
 	/**
 	 * 회원 등록을 수행한다.
 	 * 화면에서 입력을 받아 서비스에 전달하고 결과를 출력한다.
 	 * @param param
-	 * @return 1:성공,0:실패
+	 * @return 1:성공,0:실패,2:기존회원 존재
 	 */
-	int doSave(DTO param);
+	int doSave(T param);
 
 	/**
 	 * 회원 수정을 수행한다.
 	 * 수정할 회원 정보를 입력받아 서비스에 전달한다.
 	 * @param param
-	 * @return 1:성공,0:실패
+	 * @return 0:실패,2:회원없음,3:성공
 	 */
-	int doUpdate(DTO param);
+	int doUpdate(T param);
 
 	/**
 	 * 회원 삭제를 수행한다.
@@ -35,21 +35,21 @@ public interface WorkDiv {
 	 * @param param
 	 * @return 1:성공,0:실패
 	 */
-	int doDelete(DTO param);
+	int doDelete(T param);
 
 	/**
 	 * 회원 단건 조회를 수행한다.
 	 * 회원ID를 기준으로 회원 정보를 조회하여 화면에 출력한다.
 	 * @param param
-	 * @return DTO
+	 * @return T
 	 */
-	DTO doSelectOne(DTO param);
+	T doSelectOne(T param);
 
 	/**
 	 * 회원 목록 조회를 수행한다.
 	 * 검색 조건을 입력받아 목록을 조회하고 결과를 출력한다.
 	 * @param param
-	 * @return List<DTO>
+	 * @return List<T>
 	 */
-	List<DTO> doRetrieve(DTO param);
+	List<T> doRetrieve(DTO param);
 }
