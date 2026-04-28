@@ -18,6 +18,7 @@ import java.util.List;
 
 import com.pcwk.cmn.DTO;
 import com.pcwk.cmn.PLogger;
+import com.pcwk.cmn.StringUtil;
 import com.pcwk.cmn.WorkDiv;
 import com.pcwk.member.domain.MemberVO;
 
@@ -30,14 +31,14 @@ public class MemberDao implements WorkDiv<MemberVO>, PLogger {
 	public static final String MEMBER_DATA = "D:\\CJFS_20260324\\01_JAVA1\\WORKSPACE\\mini_260423\\data\\member.csv";
 
 	// 회원 ArrayList
-	private List<MemberVO> members = new ArrayList<MemberVO>();
+	public static List<MemberVO> members = new ArrayList<MemberVO>();
 
 	public MemberDao() {
 		int memberCount = getMemberDataRead(MemberDao.MEMBER_DATA);
 	}
 
 	/**
-	 * Member99.csv 저장
+	 * ArrayList<MemberVO>를 파일에 기록 합니다.
 	 * 
 	 * @param path
 	 * @return 회원 수
@@ -127,7 +128,7 @@ public class MemberDao implements WorkDiv<MemberVO>, PLogger {
 
 		for (MemberVO vo : members) {
 			if (vo.getMemberId().equals(param.getMemberId())) {
-			//if(vo.equals(param)) {
+				// if(vo.equals(param)) {
 				flag = true;
 				break;
 			}
@@ -156,27 +157,25 @@ public class MemberDao implements WorkDiv<MemberVO>, PLogger {
 	@Override
 	public int doUpdate(MemberVO param) {
 		int flag = 0;
-		//기존 데이터 존재 확인
-		//존재하면: 삭제, 저장
-		
-		if(isExistsMember(param)==false) {
-			flag = 2;//기존 회원 없음!
+		// 기존 데이터 존재 확인
+		// 존재하면: 삭제, 저장
+
+		if (isExistsMember(param) == false) {
+			flag = 2;// 기존 회원 없음!
 			return flag;
 		}
-		
-		
-		//isDeleted : 1이면 성공
+
+		// isDeleted : 1이면 성공
 		int isDeleted = doDelete(param);
-		flag = isDeleted;//삭제 성공
-		
-		if(1==isDeleted) {
-			//1이면 성공
-			int isSaved=doSave(param);
-			flag = isDeleted+isSaved+1;
+		flag = isDeleted;// 삭제 성공
+
+		if (1 == isDeleted) {
+			// 1이면 성공
+			int isSaved = doSave(param);
+			flag = isDeleted + isSaved + 1;
 			log.debug("doUpdate: {}", flag);
 		}
-		
-		
+
 		return flag;
 	}
 
@@ -184,72 +183,95 @@ public class MemberDao implements WorkDiv<MemberVO>, PLogger {
 	public int doDelete(MemberVO param) {
 		int flag = 0;
 		// 기존 회원ID가 존재하면 : 1:성공,0:실패,2:기존회원 존재
-		if(isExistsMember(param)==false) {
-			flag = 2;//회원 없음
+		if (isExistsMember(param) == false) {
+			flag = 2;// 회원 없음
 			return flag;
 		}
-		
-		//삭제
-		Iterator<MemberVO> iter= members.iterator();
-		
-		while(iter.hasNext()) {
+
+		// 삭제
+		Iterator<MemberVO> iter = members.iterator();
+
+		while (iter.hasNext()) {
 			MemberVO vo = iter.next();
-			
-			if(vo.getMemberId().equals(param.getMemberId())) {
-				//삭제
-				iter.remove();//안전한 삭제
-				flag =1;
+
+			if (vo.getMemberId().equals(param.getMemberId())) {
+				// 삭제
+				iter.remove();// 안전한 삭제
+				flag = 1;
 				break;
 			}
 		}
-		
+
 		return flag;
 	}
 
 	@Override
 	public MemberVO doSelectOne(MemberVO param) {
 		MemberVO outVO = null;
-		
-		//향상된 for
+
+		// 향상된 for
 		for (MemberVO memberVO : members) {
-			if(memberVO.getMemberId().equals(param.getMemberId()) ) {
+			if (memberVO.getMemberId().equals(param.getMemberId())) {
 				outVO = memberVO;
-				log.debug("doSelectOne:{}",outVO);
+				log.debug("doSelectOne:{}", outVO);
 				break;
 			}
 		}
-		
+
 		return outVO;
+	}
+
+	// 
+	/**
+	 *  조건을 별도 메서드로 
+	 * @param div : 검색구분
+	 * @param word: 검색어
+	 * @param vo  : MemberVO
+	 * @return true/false
+	 */
+	private boolean match(String div, String word, MemberVO vo) {
+
+		switch (div) {
+		case "10":// 회원ID
+			return vo.getMemberId().contains(word);
+
+		case "20":// 이름
+			return vo.getName().contains(word);
+			
+		case "30":// 이메일
+			return vo.getEmail().contains(word);			
+		default:
+			return false;
+		}
 	}
 
 	@Override
 	public List<MemberVO> doRetrieve(DTO param) {
-		//회원 검색조건
-		//"": 전체
-		//10: 회원ID
-		//20: 이름
-		//30: 이메일
+		// 회원 검색조건
+		// "ALL": 전체
+		// 10: 회원ID
+		// 20: 이름
+		// 30: 이메일
+		log.debug("DTO(검색조건): {}", param);
+
+		// 조회결과
+		ArrayList<MemberVO> outList = new ArrayList<MemberVO>();
+
+		String div = param.getSearchDiv();
+		String word = param.getSearchWord();
 		
-		//조회결과
-		ArrayList<MemberVO> outList=new ArrayList<MemberVO>();
-		
-		
-		if(param.getSearchDiv().equals("10")) {//회원ID
-			
-		}else if(param.getSearchDiv().equals("20")) {//이름
-			
-		}else if(param.getSearchDiv().equals("30")) {//이메일			
-			
-		}else if(param.getSearchDiv().equals("")) {//전체
+		if(StringUtil.isBlank(div) || "ALL".equalsIgnoreCase(div)) {
 			return this.members;
-			
-		}else {//검색조건 없음
-			
 		}
 		
-		
-		
-		
+		//10:회원ID,20:이름,30:이메일
+		for(MemberVO vo : this.members) {
+			if(match(div,word,vo) == true) {
+				outList.add(vo);
+			}
+		}
+
+
 		return outList;
 	}
 

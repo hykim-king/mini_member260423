@@ -1,17 +1,18 @@
 /**
- * 파일명: MemberServiceImpl.java  <br>
- * 설명:  회원정보 Service<br>
- * 작성자: user <br>
- * 작성일: 2026. 4. 24. <br>
- * 버전 : 1.0
+ * 파일명: MemberServiceImpl.java <br>
+ * 설명 :   <br>
+ * 작성자: user  <br>
+ * 생성일: 2026-04-27 <br>
  */
 package com.pcwk.member.service;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import com.pcwk.cmn.DTO;
 import com.pcwk.cmn.PLogger;
+import com.pcwk.cmn.StringUtil;
 import com.pcwk.member.dao.MemberDao;
 import com.pcwk.member.domain.MemberVO;
 
@@ -20,84 +21,108 @@ import com.pcwk.member.domain.MemberVO;
  */
 public class MemberServiceImpl implements MemberService,PLogger {
 
-	private MemberDao memberDao;
+	//Dao
+	MemberDao  memberDao;
 	
+	/** 
+	 * 
+	 */
 	public MemberServiceImpl() {
-		memberDao=new MemberDao();
+		memberDao = new MemberDao();
+		
+		 
 	}
 
+
+
+	
 	@Override
 	public int addMember(MemberVO param) {
-        if (param == null) {
-            return 0;
-        }
+		
+		if(param == null) {
+			return 0;//0:실패
+		}
+		//" pckw ", ""
 
-        if (isBlank(param.getMemberId()) 
-        		|| isBlank(param.getName())
-                || isBlank(param.getPassword()) 
-                || isBlank(param.getEmail())
-                || isBlank(param.getRole())) {
-            return 0;
-        }
+		//회원ID,이름,비밀번호,이메일,가입일,권한
+		if(StringUtil.isBlank(param.getMemberId()) 
+				|| StringUtil.isBlank(param.getName())
+				|| StringUtil.isBlank(param.getPassword())
+				|| StringUtil.isBlank(param.getEmail())
+				|| StringUtil.isBlank(param.getRole())) {
+			return 0;
+		}
+		
+		//가입일: 당일
+		param.setRegDate(StringUtil.formatDate("yyyy/MM/dd"));
 
-        // 가입일 자동 설정
-        if (isBlank(param.getRegDate())) {
-            param.setRegDate(LocalDate.now().toString());
-        }
-
-        return memberDao.doSave(param);
+		
+		
+		return memberDao.doSave(param);
 	}
 
 	@Override
 	public int updateMember(MemberVO param) {
-        if (param == null || isBlank(param.getMemberId())) {
-            return 0;
+        if(null == param) {
+        	return 0;//
         }
-
-        return memberDao.doUpdate(param);
+		
+		//회원ID,이름,비밀번호,이메일,가입일,권한
+		if(StringUtil.isBlank(param.getMemberId()) 
+				|| StringUtil.isBlank(param.getName())
+				|| StringUtil.isBlank(param.getPassword())
+				|| StringUtil.isBlank(param.getEmail())
+				|| StringUtil.isBlank(param.getRegDate())
+				|| StringUtil.isBlank(param.getRole())) {
+			return 0;
+		}
+		
+		
+		
+		return memberDao.doUpdate(param);
 	}
 
 	@Override
 	public int deleteMember(String memberId) {
-        if (isBlank(memberId)) {
-            return 0;
-        }
 
-        MemberVO inVO = new MemberVO();
-        inVO.setMemberId(memberId);
-
-        return memberDao.doDelete(inVO);
+		
+		if(StringUtil.isBlank(memberId)) {
+			return 0;
+		}
+		
+		MemberVO inVO=new MemberVO();
+		inVO.setMemberId(memberId);
+		
+		
+		return memberDao.doDelete(inVO);
 	}
 
 	@Override
 	public MemberVO findMember(String memberId) {
-        if (isBlank(memberId)) {
-            return null;
-        }
-
-        MemberVO inVO = new MemberVO();
-        inVO.setMemberId(memberId);
-
-        return memberDao.doSelectOne(inVO);
+		if(StringUtil.isBlank(memberId)) {
+			return null;
+		}
+		
+		MemberVO inVO=new MemberVO();
+		inVO.setMemberId(memberId);
+		return memberDao.doSelectOne(inVO);
+		
 	}
 
 	@Override
-	public List<MemberVO> findMembers(DTO search) {
-        if (search == null) {
-            search = new DTO();
-            search.setSearchDiv("ALL");
-            search.setSearchWord("");
-        }
-
-        return memberDao.doRetrieve(search);
+	public List<MemberVO> findMembers(DTO param) {
+		if(null == param) {
+			param = new DTO();
+			param.setSearchDiv("");//전체
+			param.setSearchWord("");//검색어
+		}
+		
+		return memberDao.doRetrieve(param);
 	}
 
 	@Override
-	public int saveMembersToFile() {
-        return memberDao.writeMemberData(MemberDao.MEMBER_DATA);
+	public int saverMembersToFile() {
+		return memberDao.writeMemberData(MemberDao.MEMBER_DATA);
 	}
-	
-    private boolean isBlank(String str) {
-        return str == null || str.trim().isEmpty();
-    }
+
 }

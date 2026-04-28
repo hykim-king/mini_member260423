@@ -18,16 +18,13 @@ import com.pcwk.cmn.PLogger;
 import com.pcwk.cmn.WorkDiv;
 import com.pcwk.worklog.domain.WorkLogVO;
 
-/**
- * 
- */
 public class WorkLogDao implements WorkDiv<WorkLogVO>,PLogger {
 
 	//파일이름
 	public static final String WORK_LOG_DATA= "D:\\CJFS_20260324\\01_JAVA1\\WORKSPACE\\mini_260423\\data\\work_log.csv";
 	
 	//업무일지 ArrayList
-	private List<WorkLogVO> workLogs = new ArrayList<WorkLogVO>();
+	public static List<WorkLogVO> workLogs = new ArrayList<WorkLogVO>();
 	
 	
 	public WorkLogDao() {
@@ -79,10 +76,39 @@ public class WorkLogDao implements WorkDiv<WorkLogVO>,PLogger {
 	}
 	
 
+	/**
+	 * 업무로그 logId존재 확인
+	 * @param param
+	 * @return
+	 */
+	public boolean isExistsWorkLog(WorkLogVO param) {
+		boolean flag = false;
+		
+		
+		for(WorkLogVO  vo  : this.workLogs) {
+			//if(vo.getLogId().equals(param.getLogId())) {
+			if(vo.equals(param)) {
+				flag = true;
+				break;
+			}
+		}
+		
+		return flag;
+	}
+	
 	@Override
 	public int doSave(WorkLogVO param) {
-		// TODO Auto-generated method stub
-		return 0;
+		int flag = 0;
+		// 기존 회원ID가 존재하면 : 1:성공,0:실패,2:기존작업일지 존재
+		if(isExistsWorkLog(param) == true) {
+			flag = 2;
+			return flag;
+		}
+		
+		flag = workLogs.add(param) == true ? 1 : 0;
+		log.debug("등록여부: {}", flag);
+		
+		return flag;
 	}
 
 	@Override
